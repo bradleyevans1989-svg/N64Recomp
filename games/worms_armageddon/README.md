@@ -50,7 +50,7 @@ python3 tools/splat2syms.py asm baserom.z64 syms.us.toml libultra_names.txt
 - splat/spimdisasm find the function boundaries in each text range. `tools/splat2syms.py` then splits the
   runs of hand-written libultra assembly that splat folds into one function, at `alabel`s, jal targets and
   address-taken entry points (such as thread entry functions).
-- `libultra_names.txt` names 117 libultra functions found by hand from their hardware register use, cop0 and
+- `libultra_names.txt` names 111 libultra functions found by hand from their hardware register use, cop0 and
   cache instructions, and call graph. N64Recomp needs these names so it can swap in the runtime's
   reimplementations and skip the exception, thread and TLB code.
 - `osUnmapTLBAll` (`func_8002CE70`) is stubbed rather than named, because the game's boot code calls it
