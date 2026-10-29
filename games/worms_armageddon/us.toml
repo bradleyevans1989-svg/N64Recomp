@@ -1,0 +1,12 @@
+# N64Recomp config for Worms Armageddon (US), sha1 3b17b36ba91737b86aa56ecb1b48a89444b53572.
+# There is no decomp, so functions come from syms.us.toml instead of an ELF. See README.md.
+[input]
+entrypoint = 0x80000400
+symbols_file_path = "syms.us.toml"
+rom_file_path = "baserom.z64"
+output_func_path = "RecompiledFuncs"
+functions_per_output_file = 100
+
+[patches]
+# osUnmapTLBAll: TLB setup is meaningless on PC, and the game's boot code calls it directly.
+stubs = ["func_8002CE70"]

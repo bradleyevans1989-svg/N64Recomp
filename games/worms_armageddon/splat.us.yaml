@@ -1,0 +1,59 @@
+name: Worms Armageddon (North America)
+sha1: 3b17b36ba91737b86aa56ecb1b48a89444b53572
+options:
+  basename: worms
+  target_path: baserom.z64
+  elf_path: build/worms.elf
+  base_path: .
+  platform: n64
+  compiler: KMC
+  ld_script_path: worms.ld
+  find_file_boundaries: False
+  header_encoding: ASCII
+  symbol_addrs_path: [symbol_addrs.txt]
+  undefined_funcs_auto_path: undefined_funcs_auto.txt
+  undefined_syms_auto_path: undefined_syms_auto.txt
+  libultra_symbols: True
+  hardware_regs: True
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  disassemble_all: True
+segments:
+  - name: header
+    type: header
+    start: 0x0
+  - name: ipl3
+    type: bin
+    start: 0x40
+  - name: boot
+    type: code
+    start: 0x1000
+    vram: 0x80000400
+    bss_size: 0x10EA0
+    subsegments:
+      - [0x1000, hasm, entry]
+      - [0x1040, data, boot_data]
+      - [0x3CB0, asm, boot_text]
+      - [0x34FD0, data, boot_data2]
+  - name: ovl_a
+    type: code
+    start: 0x38D40
+    vram: 0x80048FE0
+    exclusive_ram_id: ovl
+    subsegments:
+      - [0x38D40, data, ovl_a_data]
+      - [0x3E790, asm, ovl_a_text]
+      - [0x7EAC0, data, ovl_a_data2]
+  - name: ovl_b
+    type: code
+    start: 0x7F0B0
+    vram: 0x80048FE0
+    exclusive_ram_id: ovl
+    subsegments:
+      - [0x7F0B0, data, ovl_b_data]
+      - [0x83930, asm, ovl_b_text]
+      - [0xE6C10, data, ovl_b_data2]
+  - name: assets
+    type: bin
+    start: 0xE81C0
+  - [0xC00000]
