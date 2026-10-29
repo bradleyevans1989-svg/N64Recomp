@@ -314,14 +314,40 @@ bool N64Recomp::analyze_function(const N64Recomp::Context& context, const N64Rec
             end_address = stats.jump_tables[i + 1].vram;
         }
 
-        // TODO this assumes that the jump table is in the same section as the function itself
-        cur_jtbl.rom = cur_jtbl.vram + func.rom - func.vram;
+        // By default the jump table is assumed to be laid out in rom the same way as the function that uses it, which
+        // holds when both live in the same segment (and is required for overlays that share vram ranges). Some games
+        // (e.g. GoldenEye 007) keep jump tables in a different segment from the code, so if no section maps the jump
+        // table's vram to that rom address, look for the section that actually contains the jump table instead.
+        const auto section_maps = [](const N64Recomp::Section& section, uint32_t addr) {
+            return addr >= section.ram_addr && addr < section.ram_addr + section.size;
+        };
+        uint32_t jtbl_vram_to_rom = func.rom - func.vram;
         cur_jtbl.section_index = func.section_index;
+        bool linear_mapping_valid = false;
+        for (const N64Recomp::Section& section : context.sections) {
+            if (section_maps(section, cur_jtbl.vram) && section.rom_addr - section.ram_addr == jtbl_vram_to_rom) {
+                linear_mapping_valid = true;
+                break;
+            }
+        }
+        if (!linear_mapping_valid) {
+            for (size_t section_index = 0; section_index < context.sections.size(); section_index++) {
+                const N64Recomp::Section& section = context.sections[section_index];
+                if (section_maps(section, cur_jtbl.vram) && section.rom_addr != (uint32_t)-1) {
+                    jtbl_vram_to_rom = section.rom_addr - section.ram_addr;
+                    cur_jtbl.section_index = (uint16_t)section_index;
+                    break;
+                }
+            }
+        }
+        cur_jtbl.rom = cur_jtbl.vram + jtbl_vram_to_rom;
 
         while (vram < end_address) {
             // Retrieve the current entry of the jump table
-            // TODO same as above
-            uint32_t rom_addr = vram + func.rom - func.vram;
+            uint32_t rom_addr = vram + jtbl_vram_to_rom;
+            if ((size_t)rom_addr + sizeof(uint32_t) > context.rom.size()) {
+                break;
+            }
             uint32_t jtbl_word = byteswap(*reinterpret_cast<const uint32_t*>(&context.rom[rom_addr]));
 
             if (cur_jtbl.got_offset.has_value() && got_ram_addr.has_value()) {
