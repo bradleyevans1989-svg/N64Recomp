@@ -1,0 +1,23 @@
+# N64Recomp config for GoldenEye 007 (US), using an ELF built by the n64decomp/007 decompilation.
+# Paths are relative to this file. The ELF and generated sizes are not checked in, see README.md.
+
+[input]
+entrypoint = 0x80000400
+output_func_path = "RecompiledFuncs"
+elf_path = "ge007.u.elf"
+
+[patches]
+# Boot, exception handling, TLB and cop0 code that the runtime replaces. These can't be recompiled
+# because they poke cop0 registers or are data that the decomp labels as functions.
+ignored = [
+    "__osDispatchThreadSave",
+    "boot",
+    "counter",
+    "enqueueRunning",
+    "initTLBPrepareContext",
+    "ipl3_font",
+    "next_interrupt",
+    "resolve_TLBaddress_for_InvalidHit",
+    "sw2",
+    "swl",
+]
